@@ -918,7 +918,7 @@
             <div class="section-grid">
               <article class="card"><h3>함께 읽기</h3><p>문제는 팀원 모두가 듣고 중요한 숫자를 찾습니다.</p></article>
               <article class="card"><h3>왜인지 설명</h3><p>정답 입력 전, 한 명 이상이 풀이 이유를 말합니다.</p></article>
-              <article class="card"><h3>단서 수집</h3><p>정답을 맞히면 색칠 글자와 다음 장소가 열립니다.</p></article>
+              <article class="card"><h3>다음 QR 찾기</h3><p>정답을 맞히면 다음 문제 QR이 있는 장소 힌트가 열립니다.</p></article>
             </div>
           </div>
           <aside class="panel lab-card">
@@ -937,8 +937,8 @@
           <p>태블릿은 이 한 페이지에 머무릅니다. 교실 곳곳의 QR에는 주소가 아니라 연구소 토큰만 들어 있고, 웹페이지가 토큰과 문제를 매칭합니다.</p>
           <div class="section-grid">
             <article class="card"><h3>1. 팀 정보 입력</h3><p>팀 이름과 4~5명 인원을 입력합니다.</p></article>
-            <article class="card"><h3>2. QR 스캔</h3><p>페이지 안의 카메라로 장소 QR을 스캔합니다.</p></article>
-            <article class="card"><h3>3. 결과 제출</h3><p>모든 문제를 풀면 결과 화면을 선생님께 보여 줍니다.</p></article>
+            <article class="card"><h3>2. QR 스캔</h3><p>장소에 붙은 QR을 앱 안의 카메라로 스캔하고 문제를 풉니다.</p></article>
+            <article class="card"><h3>3. 힌트 따라 이동</h3><p>정답이면 앱에 뜨는 다음 QR 위치 힌트를 보고 이동합니다.</p></article>
           </div>
         </section>
       `;
@@ -1053,7 +1053,7 @@
               <p>${mission.intro}</p>
             </div>
             <div>
-              <span class="badge sky">숨길 장소</span>
+              <span class="badge sky">이 QR 붙일 장소</span>
               <p><strong>${mission.hiddenPlace}</strong></p>
               <p>오답 횟수: <strong id="attemptCount">${attemptCount}</strong></p>
             </div>
@@ -1093,12 +1093,12 @@
       const state = getState();
       const nextLink = allMissionsSolved(state)
         ? `<a class="secondary-btn" href="${gamePath('result')}">선생님 확인 결과 화면</a>`
-        : `<a class="secondary-btn" href="${gamePath('scan')}">다음 장소 QR 스캔</a>`;
+        : `<a class="secondary-btn" href="${gamePath('scan')}">힌트를 보고 다음 QR 찾기</a>`;
       return `
         <h3>정답입니다! 연구소 문이 열렸어요.</h3>
         <p>풀이 확인: ${mission.explanation}</p>
         <p>색칠 글자: <strong>${mission.color}</strong></p>
-        <p>다음 장소 단서: <strong>${mission.nextClue}</strong></p>
+        <p>다음 문제 QR 위치 힌트: <strong>${mission.nextClue}</strong></p>
         <div class="hero-actions">${nextLink}<a class="ghost-btn" href="${gamePath('record')}">팀 기록 보기</a></div>
       `;
     }
@@ -1137,9 +1137,9 @@
         <section class="panel">
           <span class="badge green">팀 기록지</span>
           <h1 style="font-size:clamp(42px,8vw,84px);">수학 탐험 기록</h1>
-          <p class="subtitle">정답, 색칠 글자, 다음 장소 단서를 자동으로 모읍니다. 설명 담당은 팀에서 직접 정해 말하게 하세요.</p>
+          <p class="subtitle">정답, 색칠 글자, 다음 문제 QR 위치 힌트를 자동으로 모읍니다. 설명 담당은 팀에서 직접 정해 말하게 하세요.</p>
           <table class="record-table" style="margin-top:22px;">
-            <thead><tr><th>QR</th><th>미션</th><th>정답</th><th>색칠 글자</th><th>다음 장소</th><th>상태</th></tr></thead>
+            <thead><tr><th>QR</th><th>미션</th><th>정답</th><th>색칠 글자</th><th>다음 QR 위치 힌트</th><th>상태</th></tr></thead>
             <tbody>
               ${missions.map(mission => {
                 const solved = state.solved[mission.id];
@@ -1237,7 +1237,7 @@
             </tbody>
           </table>
           <div class="hero-actions">
-            ${completed ? `<a class="secondary-btn" href="${gamePath('game')}">입구 화면</a>` : `<a class="primary-btn" href="${gamePath('scan')}">남은 QR 스캔</a>`}
+            ${completed ? `<a class="secondary-btn" href="${gamePath('game')}">입구 화면</a>` : `<a class="primary-btn" href="${gamePath('scan')}">힌트를 보고 남은 QR 찾기</a>`}
             <a class="ghost-btn" href="${gamePath('record')}">팀 기록 보기</a>
           </div>
         </section>
@@ -1250,7 +1250,7 @@
         <section class="panel">
           <span class="badge violet">교사용 QR 배포</span>
           <h1 style="font-size:clamp(42px,8vw,84px);">QR 코드 붙이는 곳</h1>
-          <p class="subtitle">각 QR에는 주소가 아니라 연구소 토큰만 들어갑니다. 학생들은 먼저 웹페이지를 연 뒤, 페이지 안의 스캐너로 이 QR을 읽습니다.</p>
+          <p class="subtitle">각 QR에는 주소가 아니라 연구소 토큰만 들어갑니다. QR을 아래 장소에 붙이면, 학생은 앱에서 정답을 맞힌 뒤 받은 위치 힌트를 따라 다음 QR을 찾아갑니다.</p>
           <div class="qr-grid">
             ${missions.map(mission => {
               const payload = qrPayload(mission);
@@ -1258,7 +1258,7 @@
                 <article class="qr-card">
                   <span class="badge sky">QR ${mission.id}</span>
                   <h3>${mission.gate}</h3>
-                  <p><strong>붙일 곳:</strong> ${mission.hiddenPlace}</p>
+                  <p><strong>이 QR 붙일 곳:</strong> ${mission.hiddenPlace}</p>
                   <img alt="QR ${mission.id} 코드" src="${qrApi}${encodeURIComponent(payload)}">
                   <div class="copy-row">
                     <div class="url-box" title="${payload}">${payload}</div>
