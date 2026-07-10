@@ -9,11 +9,18 @@ window.QUIZ_ESCAPE_CATALOG = {
           id: 'secret-lab',
           subjectId: 'math',
           title: '비밀 수학 연구소',
+          brandTitle: '비밀 수학 연구소',
           subtitle: '사라진 보물 암호를 찾아라!',
           duration: '60~80분',
           teamSize: '4~5명',
+          recordTitle: '수학 탐험 기록',
+          qrListPdf: 'math-secret-lab-qr-list.pdf',
+          studentPathLabel: '학생용 입장',
+          teacherPathLabel: '교사용 준비',
           storageKey: 'math-secret-lab',
           finalInstruction: '모든 답을 더해라',
+          finalSuccessMessage: '진짜 보물은 친구들과 함께 읽고, 계산하고, 설명하고, 끝까지 도전한 힘입니다.',
+          teacherInstructions: '각 QR에는 주소가 아니라 연구소 토큰만 들어갑니다. QR을 아래 장소에 붙이면, 학생은 앱에서 정답을 맞힌 뒤 받은 위치 힌트를 따라 다음 QR을 찾아갑니다.',
           roles: ['낭독자', '계산가', '검산가', '기록가', '발표가'],
           missions: [
             {
