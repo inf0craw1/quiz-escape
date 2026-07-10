@@ -8,10 +8,11 @@
 - `src/data/games.js`: 과목/방탈출/미션 데이터 카탈로그
 - `math-qr-escape-storybook.html`: 기존 인쇄용 스토리북 원본
 - `math-qr-escape-storybook.pdf`: 기존 PDF 자료
+- `math-secret-lab-qr-list.pdf`: 교사용 QR 리스트 PDF
 
 ## 사용 흐름
 
-1. 학생은 웹페이지 하나를 엽니다.
+1. 학생은 학생용 URL을 엽니다.
 2. 팀 이름과 인원을 입력합니다.
 3. 앱 안의 QR 스캐너로 교실 QR을 스캔합니다.
 4. QR 토큰과 매칭되는 문제가 열립니다.
@@ -19,6 +20,15 @@
 6. 정답이면 앱이 다음 문제 QR 위치 힌트를 보여 줍니다.
 7. 학생은 힌트를 따라 다음 장소로 이동해 다음 QR을 스캔합니다.
 8. 모든 미션을 완료하면 결과 화면을 선생님께 보여 줍니다.
+
+## 운영 URL
+
+- 학생용: `#/student/math/secret-lab`
+- 교사용: `#/teacher/math/secret-lab`
+- 인쇄용 QR 페이지: `#/print/math/secret-lab`
+- QR 리스트 PDF: `math-secret-lab-qr-list.pdf`
+
+학생에게는 학생용 URL만 공유하고, 교사용 URL/PDF는 수업 준비용으로 사용합니다.
 
 ## 새 방탈출 추가
 
@@ -49,7 +59,7 @@
 python3 -m http.server 4173
 ```
 
-브라우저에서 `http://127.0.0.1:4173/index.html`을 엽니다.
+브라우저에서 `http://127.0.0.1:4173/index.html#/student/math/secret-lab`을 엽니다.
 
 ## 배포
 
