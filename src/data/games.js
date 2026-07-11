@@ -1,3 +1,249 @@
+const COMPLETION_LETTERS = ['도', '전', '완', '료', '성', '공'];
+const CLASSROOM_PLACES = ['교실 앞문 근처', '책장 또는 교재 보관함', '정수기 근처', '벽시계 또는 시간표 근처', '학생 책상 아래', '칠판 또는 화이트보드'];
+
+function createMission(item, index, tokenPrefix, gradeLabel, theme) {
+  const id = index + 1;
+  return {
+    id,
+    token: `${tokenPrefix}-${String(id).padStart(2, '0')}`,
+    gate: `${gradeLabel} ${id}번 문`,
+    title: item.title,
+    intro: `${theme} 단서를 풀어 다음 장소를 찾아가세요.`,
+    hiddenPlace: CLASSROOM_PLACES[index],
+    question: item.question,
+    answer: item.answer,
+    color: COMPLETION_LETTERS[index],
+    nextClue: index < CLASSROOM_PLACES.length - 1 ? CLASSROOM_PLACES[index + 1] : '모든 문제를 풀고 결과 화면으로 가세요',
+    explanation: item.explanation,
+    hints: item.hints || ['문제에서 중요한 숫자와 낱말을 먼저 찾으세요.', '무엇을 구해야 하는지 팀원에게 말해 보세요.', item.explanation]
+  };
+}
+
+function createGradeGame(subjectId, config) {
+  return {
+    id: config.id,
+    subjectId,
+    title: config.title,
+    brandTitle: config.title,
+    subtitle: config.subtitle,
+    duration: '40~60분',
+    teamSize: '4~5명',
+    recordTitle: `${config.gradeLabel} ${config.subjectName} 탐험 기록`,
+    studentPathLabel: '학생용 입장',
+    teacherPathLabel: '교사용 준비',
+    storageKey: `${subjectId}-${config.id}`,
+    finalInstruction: '모든 답을 더해라',
+    finalSuccessMessage: `${config.gradeLabel} ${config.subjectName} 미션을 끝까지 해결했습니다. 오늘의 보물은 친구들과 함께 생각하고 설명한 힘입니다.`,
+    teacherInstructions: '각 QR에는 주소가 아니라 미션 토큰만 들어갑니다. 학생은 이전 문제를 맞힌 뒤에만 다음 QR을 열 수 있습니다.',
+    roles: [],
+    missions: config.missions.map((mission, index) => createMission(mission, index, config.tokenPrefix, config.gradeLabel, config.theme))
+  };
+}
+
+const mathGradeConfigs = [
+  {
+    id: 'elementary-1-math', gradeLabel: '초1', subjectName: '수학', title: '초1 수학 숫자 숲', subtitle: '100까지 수와 덧셈·뺄셈 단서를 찾아라', tokenPrefix: 'MATH-E1', theme: '숫자 숲',
+    missions: [
+      { title: '사탕 세기', question: '사탕이 10개씩 묶음 2개와 낱개 7개 있습니다. 사탕은 모두 몇 개일까요?', answer: 27, explanation: '10개 묶음 2개는 20개이고, 낱개 7개를 더하면 27개입니다.' },
+      { title: '연필 더하기', question: '연필 8자루에 5자루를 더 받았습니다. 연필은 모두 몇 자루일까요?', answer: 13, explanation: '8에 5를 더하면 13입니다.' },
+      { title: '풍선 빼기', question: '풍선 16개 중 7개가 날아갔습니다. 남은 풍선은 몇 개일까요?', answer: 9, explanation: '16에서 7을 빼면 9입니다.' },
+      { title: '도형 찾기', question: '삼각형 4개와 사각형 3개가 있습니다. 도형은 모두 몇 개일까요?', answer: 7, explanation: '4개와 3개를 더하면 7개입니다.' },
+      { title: '길이 비교', question: '빨간 끈은 12칸, 파란 끈은 9칸입니다. 빨간 끈은 파란 끈보다 몇 칸 더 길까요?', answer: 3, explanation: '12에서 9를 빼면 3칸 더 깁니다.' },
+      { title: '달력 단서', question: '월요일을 1일째로 세면 금요일은 몇 일째일까요?', answer: 5, explanation: '월, 화, 수, 목, 금을 차례로 세면 금요일은 5일째입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-2-math', gradeLabel: '초2', subjectName: '수학', title: '초2 수학 시간 열차', subtitle: '세 자리 수와 곱셈구구를 지나가라', tokenPrefix: 'MATH-E2', theme: '시간 열차',
+    missions: [
+      { title: '세 자리 수', question: '352에서 백의 자리 숫자는 무엇일까요?', answer: 3, explanation: '352는 300, 50, 2로 이루어져 백의 자리 숫자는 3입니다.' },
+      { title: '자리 맞춰 더하기', question: '146 + 257은 얼마일까요?', answer: 403, explanation: '일의 자리부터 더하면 146 + 257 = 403입니다.' },
+      { title: '곱셈구구', question: '7 × 4는 얼마일까요?', answer: 28, explanation: '7을 4번 더하면 28입니다.' },
+      { title: '돈 계산', question: '1000원에서 380원을 썼습니다. 남은 돈은 몇 원일까요?', answer: 620, explanation: '1000 - 380 = 620입니다.' },
+      { title: '정육면체', question: '정육면체의 면은 모두 몇 개일까요?', answer: 6, explanation: '정육면체는 위, 아래, 앞, 뒤, 왼쪽, 오른쪽으로 면이 6개입니다.' },
+      { title: '표 읽기', question: '월요일 방문자 12명, 화요일 방문자 9명입니다. 이틀 동안 모두 몇 명일까요?', answer: 21, explanation: '12 + 9 = 21명입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-3-math', gradeLabel: '초3', subjectName: '수학', title: '초3 수학 분수 정원', subtitle: '나눗셈·분수·둘레 단서를 모아라', tokenPrefix: 'MATH-E3', theme: '분수 정원',
+    missions: [
+      { title: '나눗셈 상자', question: '사과 36개를 4상자에 똑같이 나누면 한 상자에 몇 개씩 들어갈까요?', answer: 9, explanation: '36 ÷ 4 = 9입니다.' },
+      { title: '분수 조각', question: '피자를 똑같이 8조각으로 나누어 3조각 먹었습니다. 먹은 조각 수는 몇 조각일까요?', answer: 3, explanation: '8조각 중 먹은 양은 문제에서 3조각이라고 했습니다.' },
+      { title: '소수 첫걸음', question: '0.7은 0.1이 몇 개 모인 수일까요?', answer: 7, explanation: '0.7은 0.1이 7개인 수입니다.' },
+      { title: '둘레 구하기', question: '한 변이 6cm인 정사각형의 둘레는 몇 cm일까요?', answer: 24, explanation: '정사각형 둘레는 한 변의 길이를 4번 더해 6×4=24입니다.' },
+      { title: '각 찾기', question: '삼각형의 꼭짓점은 몇 개일까요?', answer: 3, explanation: '삼각형은 세 꼭짓점과 세 변을 가진 도형입니다.' },
+      { title: '막대그래프', question: '그래프에서 축구 14명, 피구 11명이 선택했습니다. 두 운동을 합치면 모두 몇 명일까요?', answer: 25, explanation: '14 + 11 = 25명입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-4-math', gradeLabel: '초4', subjectName: '수학', title: '초4 수학 각도 도시', subtitle: '큰 수 계산과 각도·넓이를 해결하라', tokenPrefix: 'MATH-E4', theme: '각도 도시',
+    missions: [
+      { title: '큰 수 곱셈', question: '24 × 13은 얼마일까요?', answer: 312, explanation: '24×10=240, 24×3=72이므로 모두 312입니다.' },
+      { title: '분수 비교', question: '분모가 같은 분수 3/8과 5/8 중 더 큰 분수의 분자는 무엇일까요?', answer: 5, explanation: '분모가 같으면 분자가 큰 분수가 더 큽니다.' },
+      { title: '소수 더하기', question: '1.4 + 2.3은 얼마일까요? 소수점을 빼고 10배한 값으로 입력하세요.', answer: 37, explanation: '1.4 + 2.3 = 3.7이고, 10배하면 37입니다.' },
+      { title: '직각 세기', question: '직사각형에는 직각이 몇 개 있을까요?', answer: 4, explanation: '직사각형의 네 각은 모두 직각입니다.' },
+      { title: '넓이 구하기', question: '가로 8cm, 세로 5cm인 직사각형의 넓이는 몇 cm²일까요?', answer: 40, explanation: '직사각형 넓이는 가로×세로이므로 8×5=40입니다.' },
+      { title: '자료 해석', question: '표에서 1반 23명, 2반 26명이 체험학습을 신청했습니다. 모두 몇 명일까요?', answer: 49, explanation: '23 + 26 = 49명입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-5-math', gradeLabel: '초5', subjectName: '수학', title: '초5 수학 약수 광산', subtitle: '약수·배수·분수와 도형 넓이를 캐내라', tokenPrefix: 'MATH-E5', theme: '약수 광산',
+    missions: [
+      { title: '계산 순서', question: '8 + 6 × 3은 얼마일까요?', answer: 26, explanation: '곱셈을 먼저 계산해 6×3=18, 8+18=26입니다.' },
+      { title: '최대공약수', question: '12와 18의 최대공약수는 무엇일까요?', answer: 6, explanation: '12와 18을 모두 나누는 가장 큰 수는 6입니다.' },
+      { title: '분수 덧셈', question: '1/4 + 2/4의 분자는 얼마일까요?', answer: 3, explanation: '분모가 같으므로 분자끼리 더해 3/4입니다.' },
+      { title: '소수 곱셈', question: '2.5 × 4는 얼마일까요?', answer: 10, explanation: '25×4=100에서 소수점을 한 자리 옮기면 10입니다.' },
+      { title: '직육면체 부피', question: '가로 3cm, 세로 4cm, 높이 5cm인 직육면체의 부피는 몇 cm³일까요?', answer: 60, explanation: '직육면체 부피는 가로×세로×높이로 3×4×5=60입니다.' },
+      { title: '평행사변형 넓이', question: '밑변 9cm, 높이 6cm인 평행사변형의 넓이는 몇 cm²일까요?', answer: 54, explanation: '평행사변형 넓이는 밑변×높이로 9×6=54입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-6-math', gradeLabel: '초6', subjectName: '수학', title: '초6 수학 비율 항해', subtitle: '비와 비율·지도·입체도형을 항해하라', tokenPrefix: 'MATH-E6', theme: '비율 항해',
+    missions: [
+      { title: '분수와 소수', question: '0.75는 0.25가 몇 개 모인 수일까요?', answer: 3, explanation: '0.25가 3개 모이면 0.75입니다.' },
+      { title: '비율 계산', question: '사과 2개와 배 3개의 비에서 전체 과일은 몇 개일까요?', answer: 5, explanation: '비 2:3의 전체는 2+3=5입니다.' },
+      { title: '분수 곱셈', question: '1/2 × 12는 얼마일까요?', answer: 6, explanation: '12의 절반은 6입니다.' },
+      { title: '축척 지도', question: '지도에서 1cm가 실제 100m입니다. 지도 4cm는 실제 몇 m일까요?', answer: 400, explanation: '100m가 4번이므로 400m입니다.' },
+      { title: '원기둥 단서', question: '원기둥의 밑면은 몇 개일까요?', answer: 2, explanation: '원기둥은 위와 아래에 원 모양 밑면 2개가 있습니다.' },
+      { title: '평균 구하기', question: '점수 80, 90, 100의 평균은 몇 점일까요?', answer: 90, explanation: '세 수의 합 270을 3으로 나누면 90입니다.' }
+    ]
+  },
+  {
+    id: 'middle-1-math', gradeLabel: '중1', subjectName: '수학', title: '중1 수학 좌표 연구실', subtitle: '정수·방정식·좌표 단서를 해독하라', tokenPrefix: 'MATH-M1', theme: '좌표 연구실',
+    missions: [
+      { title: '정수 계산', question: '-7 + 12는 얼마일까요?', answer: 5, explanation: '음수와 양수를 더하면 12-7=5입니다.' },
+      { title: '식의 값', question: 'x=3일 때 2x + 5의 값은 얼마일까요?', answer: 11, explanation: '2×3+5=11입니다.' },
+      { title: '일차방정식', question: 'x + 7 = 15일 때 x는 얼마일까요?', answer: 8, explanation: '양변에서 7을 빼면 x=8입니다.' },
+      { title: '좌표 읽기', question: '점 A(4, -2)의 x좌표는 무엇일까요?', answer: 4, explanation: '순서쌍의 첫 번째 수가 x좌표입니다.' },
+      { title: '삼각형 각', question: '삼각형의 두 각이 50°, 60°입니다. 나머지 한 각은 몇 도일까요?', answer: 70, explanation: '삼각형 내각의 합은 180°이므로 180-50-60=70입니다.' },
+      { title: '짝수 찾기', question: '1부터 6까지 숫자 카드 중 짝수 카드는 몇 장일까요?', answer: 3, explanation: '짝수는 2, 4, 6으로 3장입니다.' }
+    ]
+  },
+  {
+    id: 'middle-2-math', gradeLabel: '중2', subjectName: '수학', title: '중2 수학 함수 기지', subtitle: '연립방정식과 함수 그래프를 통과하라', tokenPrefix: 'MATH-M2', theme: '함수 기지',
+    missions: [
+      { title: '일차식 계산', question: '3x + 2x에서 x의 계수는 얼마일까요?', answer: 5, explanation: '동류항을 더하면 5x입니다.' },
+      { title: '연립방정식', question: 'x+y=10, x-y=2일 때 x는 얼마일까요?', answer: 6, explanation: '두 식을 더하면 2x=12이므로 x=6입니다.' },
+      { title: '부등식', question: 'x + 3 < 8을 만족하는 자연수 x 중 가장 큰 수는?', answer: 4, explanation: 'x<5이므로 자연수 중 가장 큰 수는 4입니다.' },
+      { title: '함수값', question: 'y=2x+1에서 x=4일 때 y는 얼마일까요?', answer: 9, explanation: '2×4+1=9입니다.' },
+      { title: '닮음비', question: '두 도형의 닮음비가 2:3일 때 작은 도형의 변이 8cm이면 큰 도형 대응변은 몇 cm일까요?', answer: 12, explanation: '8에 3/2를 곱하면 12입니다.' },
+      { title: '자료 평균', question: '자료 4, 6, 8, 10의 평균은 얼마일까요?', answer: 7, explanation: '합 28을 4로 나누면 7입니다.' }
+    ]
+  },
+  {
+    id: 'middle-3-math', gradeLabel: '중3', subjectName: '수학', title: '중3 수학 이차 암호실', subtitle: '인수분해·이차방정식·피타고라스를 해결하라', tokenPrefix: 'MATH-M3', theme: '이차 암호실',
+    missions: [
+      { title: '인수분해', question: 'x² + 5x + 6 = (x+2)(x+□)입니다. □에 들어갈 수는?', answer: 3, explanation: '2와 3을 곱하면 6, 더하면 5입니다.' },
+      { title: '이차방정식', question: 'x² = 49일 때 양수 x는 얼마일까요?', answer: 7, explanation: '7²=49이므로 양수 해는 7입니다.' },
+      { title: '그래프 꼭짓점', question: 'y=x² 그래프의 꼭짓점의 y좌표는 무엇일까요?', answer: 0, explanation: 'y=x²의 꼭짓점은 (0,0)입니다.' },
+      { title: '피타고라스', question: '직각삼각형의 두 직각변이 6, 8입니다. 빗변은 얼마일까요?', answer: 10, explanation: '6²+8²=36+64=100이므로 빗변은 10입니다.' },
+      { title: '원주각', question: '반원에 대한 원주각은 몇 도일까요?', answer: 90, explanation: '반원에 대한 원주각은 직각입니다.' },
+      { title: '상자 부피', question: '가로 4, 세로 5, 높이 6인 직육면체 부피는 얼마일까요?', answer: 120, explanation: '4×5×6=120입니다.' }
+    ]
+  }
+];
+
+const englishGradeConfigs = [
+  {
+    id: 'elementary-1-english', gradeLabel: '초1', subjectName: '영어', title: '초1 영어 색깔 놀이터', subtitle: '그림과 소리로 영어 단서를 찾아라', tokenPrefix: 'ENG-E1', theme: '색깔 놀이터',
+    missions: [
+      { title: 'Color Code', question: 'red의 뜻은 몇 번일까요? 1) 빨강 2) 파랑 3) 노랑', answer: 1, explanation: 'red는 빨강입니다.' },
+      { title: 'Number Code', question: 'five는 숫자로 몇일까요?', answer: 5, explanation: 'five는 5입니다.' },
+      { title: 'Classroom Code', question: 'book의 뜻은 몇 번일까요? 1) 책 2) 문 3) 창문', answer: 1, explanation: 'book은 책입니다.' },
+      { title: 'Animal Code', question: 'cat의 뜻은 몇 번일까요? 1) 강아지 2) 고양이 3) 새', answer: 2, explanation: 'cat은 고양이입니다.' },
+      { title: 'Hello Code', question: '인사말 hello는 몇 번일까요? 1) 안녕 2) 잘 가 3) 고마워', answer: 1, explanation: 'hello는 안녕이라는 인사입니다.' },
+      { title: 'Action Code', question: 'stand up은 몇 번 행동일까요? 1) 일어서기 2) 앉기 3) 뛰기', answer: 1, explanation: 'stand up은 일어서기입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-2-english', gradeLabel: '초2', subjectName: '영어', title: '초2 영어 가족 상점', subtitle: '가족·몸·음식 단어를 모아라', tokenPrefix: 'ENG-E2', theme: '가족 상점',
+    missions: [
+      { title: 'Body Code', question: 'eye의 뜻은 몇 번일까요? 1) 손 2) 눈 3) 발', answer: 2, explanation: 'eye는 눈입니다.' },
+      { title: 'Family Code', question: 'sister의 뜻은 몇 번일까요? 1) 자매 2) 아빠 3) 할머니', answer: 1, explanation: 'sister는 여자 형제, 즉 자매를 뜻합니다.' },
+      { title: 'Toy Code', question: 'ball의 뜻은 몇 번일까요? 1) 인형 2) 공 3) 자동차', answer: 2, explanation: 'ball은 공입니다.' },
+      { title: 'Food Code', question: 'milk의 뜻은 몇 번일까요? 1) 우유 2) 물 3) 주스', answer: 1, explanation: 'milk는 우유입니다.' },
+      { title: 'Weather Code', question: 'sunny의 뜻은 몇 번일까요? 1) 비 오는 2) 눈 오는 3) 맑은', answer: 3, explanation: 'sunny는 맑은 날씨입니다.' },
+      { title: 'Letter Code', question: 'A, B, C 다음에 오는 알파벳은 몇 번째 알파벳일까요?', answer: 4, explanation: 'A=1, B=2, C=3, D=4입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-3-english', gradeLabel: '초3', subjectName: '영어', title: '초3 영어 파닉스 숲', subtitle: '소리와 짧은 문장 단서를 해결하라', tokenPrefix: 'ENG-E3', theme: '파닉스 숲',
+    missions: [
+      { title: 'CVC Code', question: 'cat, cap, can은 모두 어떤 첫 글자 소리로 시작할까요? A=1, B=2, C=3으로 답하세요.', answer: 3, explanation: 'cat, cap, can은 모두 C 소리로 시작합니다.' },
+      { title: 'School Code', question: 'eraser의 뜻은 몇 번일까요? 1) 지우개 2) 책상 3) 가방', answer: 1, explanation: 'eraser는 지우개입니다.' },
+      { title: 'Animal Home', question: 'fish가 사는 곳인 ocean은 몇 번일까요? 1) 바다 2) 숲 3) 농장', answer: 1, explanation: 'ocean은 바다입니다.' },
+      { title: 'Question Code', question: 'What is this?에 알맞은 대답은 몇 번일까요? 1) It is a pencil. 2) I am ten years old. 3) It is sunny.', answer: 1, explanation: 'What is this?는 이것이 무엇인지 묻는 말이므로 It is a pencil.이 알맞습니다.' },
+      { title: 'Like Code', question: 'I like apples.의 뜻은 몇 번일까요? 1) 나는 사과를 좋아한다 2) 나는 사과가 없다 3) 사과는 크다', answer: 1, explanation: 'I like는 좋아한다는 뜻입니다.' },
+      { title: 'Verb Code', question: 'run의 뜻은 몇 번일까요? 1) 먹다 2) 달리다 3) 읽다', answer: 2, explanation: 'run은 달리다입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-4-english', gradeLabel: '초4', subjectName: '영어', title: '초4 영어 하루 지도', subtitle: '집·시간·일상 표현을 따라가라', tokenPrefix: 'ENG-E4', theme: '하루 지도',
+    missions: [
+      { title: 'House Code', question: 'kitchen의 뜻은 몇 번일까요? 1) 부엌 2) 침실 3) 욕실', answer: 1, explanation: 'kitchen은 부엌입니다.' },
+      { title: 'Time Code', question: '3:00은 영어로 three o’clock입니다. 숫자로 몇 시일까요?', answer: 3, explanation: 'three o’clock은 3시입니다.' },
+      { title: 'Menu Code', question: 'I want juice.에서 원하는 것은 몇 번일까요? 1) milk 2) juice 3) water', answer: 2, explanation: 'I want juice는 주스를 원한다는 뜻입니다.' },
+      { title: 'Routine Code', question: 'get up의 뜻은 몇 번일까요? 1) 일어나다 2) 씻다 3) 자다', answer: 1, explanation: 'get up은 일어나다입니다.' },
+      { title: 'Clothes Code', question: 'jacket의 뜻은 몇 번일까요? 1) 모자 2) 재킷 3) 신발', answer: 2, explanation: 'jacket은 재킷입니다.' },
+      { title: 'Hobby Code', question: 'He likes soccer.에서 주어는 몇 번일까요? 1) He 2) likes 3) soccer', answer: 1, explanation: '문장의 주어는 He입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-5-english', gradeLabel: '초5', subjectName: '영어', title: '초5 영어 길찾기 탐험', subtitle: '장소·과거·비교 표현을 찾아라', tokenPrefix: 'ENG-E5', theme: '길찾기 탐험',
+    missions: [
+      { title: 'Place Code', question: 'library의 뜻은 몇 번일까요? 1) 도서관 2) 병원 3) 공원', answer: 1, explanation: 'library는 도서관입니다.' },
+      { title: 'Direction Code', question: 'turn left의 뜻은 몇 번일까요? 1) 오른쪽으로 돌아라 2) 왼쪽으로 돌아라 3) 멈춰라', answer: 2, explanation: 'left는 왼쪽입니다.' },
+      { title: 'Past Code', question: 'I visited Busan yesterday.에서 과거를 나타내는 말은 몇 번일까요? 1) visited 2) Busan 3) I', answer: 1, explanation: 'visited는 visit의 과거형입니다.' },
+      { title: 'Compare Code', question: 'bigger의 뜻은 몇 번일까요? 1) 더 큰 2) 가장 큰 3) 작은', answer: 1, explanation: 'bigger는 비교급으로 더 크다는 뜻입니다.' },
+      { title: 'Job Code', question: 'doctor의 뜻은 몇 번일까요? 1) 선생님 2) 의사 3) 가수', answer: 2, explanation: 'doctor는 의사입니다.' },
+      { title: 'Invitation Code', question: 'Let’s play soccer.는 무엇을 하는 표현일까요? 1) 초대/제안 2) 사과 3) 감사', answer: 1, explanation: 'Let’s는 함께 하자고 제안하는 표현입니다.' }
+    ]
+  },
+  {
+    id: 'elementary-6-english', gradeLabel: '초6', subjectName: '영어', title: '초6 영어 세계 여행', subtitle: '여행·건강·미래 계획을 해독하라', tokenPrefix: 'ENG-E6', theme: '세계 여행',
+    missions: [
+      { title: 'Travel Code', question: 'airport의 뜻은 몇 번일까요? 1) 공항 2) 호텔 3) 박물관', answer: 1, explanation: 'airport는 공항입니다.' },
+      { title: 'Health Code', question: 'headache의 뜻은 몇 번일까요? 1) 두통 2) 감기 3) 배탈', answer: 1, explanation: 'headache는 두통입니다.' },
+      { title: 'Future Code', question: 'I will study tomorrow.에서 미래를 나타내는 말은 몇 번일까요? 1) will 2) study 3) tomorrow', answer: 1, explanation: 'will은 미래를 나타낼 때 씁니다.' },
+      { title: 'Reason Code', question: 'because의 뜻은 몇 번일까요? 1) 그러나 2) 왜냐하면 3) 그리고', answer: 2, explanation: 'because는 이유를 말할 때 씁니다.' },
+      { title: 'Culture Code', question: 'festival의 뜻은 몇 번일까요? 1) 축제 2) 숙제 3) 운동장', answer: 1, explanation: 'festival은 축제입니다.' },
+      { title: 'Message Code', question: 'Dear Mina로 시작하는 글은 보통 몇 번 형식일까요? 1) 편지/이메일 2) 메뉴판 3) 지도', answer: 1, explanation: 'Dear는 편지나 이메일에서 자주 쓰는 시작 표현입니다.' }
+    ]
+  },
+  {
+    id: 'middle-1-english', gradeLabel: '중1', subjectName: '영어', title: '중1 영어 문장 연구실', subtitle: 'be동사·일반동사·의문사를 분석하라', tokenPrefix: 'ENG-M1', theme: '문장 연구실',
+    missions: [
+      { title: 'Be Verb Code', question: 'She is kind.에서 be동사는 몇 번째 단어일까요?', answer: 2, explanation: 'She(1) is(2) kind(3)이므로 be동사는 두 번째 단어입니다.' },
+      { title: 'Do Verb Code', question: 'They play soccer.에서 일반동사는 몇 번째 단어일까요?', answer: 2, explanation: 'play가 일반동사입니다.' },
+      { title: 'Can Code', question: 'I can swim.에서 능력을 나타내는 조동사는 몇 번째 단어일까요?', answer: 2, explanation: 'can은 할 수 있다는 능력을 나타냅니다.' },
+      { title: 'Command Code', question: 'Open the door.는 문장 종류 중 몇 번일까요? 1) 명령문 2) 의문문 3) 감탄문', answer: 1, explanation: '동사원형으로 시작해 지시하므로 명령문입니다.' },
+      { title: 'Wh Code', question: 'Where do you live?에서 장소를 묻는 의문사는 몇 번째 단어일까요?', answer: 1, explanation: 'Where가 장소를 묻는 의문사입니다.' },
+      { title: 'Reading Code', question: 'Tom has two dogs and three cats. Tom의 동물은 모두 몇 마리일까요?', answer: 5, explanation: 'two dogs 2마리와 three cats 3마리로 모두 5마리입니다.' }
+    ]
+  },
+  {
+    id: 'middle-2-english', gradeLabel: '중2', subjectName: '영어', title: '중2 영어 시제 타워', subtitle: '과거·미래·비교와 접속사를 통과하라', tokenPrefix: 'ENG-M2', theme: '시제 타워',
+    missions: [
+      { title: 'Past Code', question: 'go의 과거형 went는 몇 번일까요? 1) goed 2) went 3) goes', answer: 2, explanation: 'go의 과거형은 went입니다.' },
+      { title: 'Future Code', question: 'be going to에서 미래 의미를 만드는 핵심 표현은 몇 단어로 이루어져 있을까요?', answer: 3, explanation: 'be, going, to 세 단어입니다.' },
+      { title: 'Comparative Code', question: 'taller는 몇 번 의미일까요? 1) 더 키가 큰 2) 가장 키가 큰 3) 키가 작은', answer: 1, explanation: 'taller는 비교급입니다.' },
+      { title: 'Infinitive Code', question: 'I want to read.에서 to부정사는 몇 번째 단어부터 시작할까요?', answer: 3, explanation: 'I(1) want(2) to(3) read(4)입니다.' },
+      { title: 'Conjunction Code', question: 'I was tired, but I studied.에서 반대 의미를 연결하는 단어는 몇 번째 단어일까요?', answer: 5, explanation: 'but이 반대 의미를 연결합니다.' },
+      { title: 'Opinion Code', question: 'I think math is fun.에서 의견을 나타내는 동사는 몇 번째 단어일까요?', answer: 2, explanation: 'think는 생각이나 의견을 나타냅니다.' }
+    ]
+  },
+  {
+    id: 'middle-3-english', gradeLabel: '중3', subjectName: '영어', title: '중3 영어 독해 암호국', subtitle: '현재완료·수동태·관계대명사 단서를 해독하라', tokenPrefix: 'ENG-M3', theme: '독해 암호국',
+    missions: [
+      { title: 'Perfect Code', question: 'I have visited Jeju.에서 현재완료를 만드는 조동사는 몇 번째 단어일까요?', answer: 2, explanation: 'have가 현재완료를 만듭니다.' },
+      { title: 'Passive Code', question: 'The window was broken.에서 수동태를 나타내는 be동사는 몇 번째 단어일까요?', answer: 3, explanation: 'was가 수동태의 be동사입니다.' },
+      { title: 'Relative Code', question: 'This is the book that I bought.에서 관계대명사는 몇 번째 단어일까요?', answer: 5, explanation: 'that이 관계대명사입니다.' },
+      { title: 'Participle Code', question: 'Look at the sleeping baby.에서 baby를 꾸미는 현재분사는 몇 번째 단어일까요?', answer: 4, explanation: 'sleeping이 baby를 꾸밉니다.' },
+      { title: 'If Code', question: 'If it rains, I will stay home.에서 조건을 나타내는 단어는 몇 번째 단어일까요?', answer: 1, explanation: 'If가 조건을 나타냅니다.' },
+      { title: 'Inference Code', question: 'Mina missed the bus, so she was late. Mina가 늦은 이유는 몇 번일까요? 1) 버스를 놓침 2) 숙제를 안 함 3) 비가 옴', answer: 1, explanation: 'missed the bus가 늦은 이유입니다.' }
+    ]
+  }
+];
+
 window.QUIZ_ESCAPE_CATALOG = {
   subjects: [
     {
@@ -108,8 +354,15 @@ window.QUIZ_ESCAPE_CATALOG = {
               hints: ['앞의 수에서 다음 수로 얼마나 커지는지 보세요.', '모든 수가 3씩 커지고 있습니다.', '15에 3을 더하세요.']
             }
           ]
-        }
+        },
+        ...mathGradeConfigs.map(config => createGradeGame('math', config))
       ]
+    },
+    {
+      id: 'english',
+      name: '영어',
+      description: '단어, 문장, 읽기 단서를 단계별로 해결하는 영어 방탈출',
+      games: englishGradeConfigs.map(config => createGradeGame('english', config))
     }
   ]
 };
