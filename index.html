@@ -1314,7 +1314,7 @@
           <p class="subtitle">${currentGame.teacherInstructions || '각 QR을 아래 장소에 붙이고, 학생은 앱에서 받은 위치 힌트를 따라 다음 QR을 찾아갑니다.'}</p>
           <div class="hero-actions">
             <a class="primary-btn" href="${gamePath('student')}">학생용 URL 열기</a>
-            <a class="secondary-btn" href="${currentGame.qrListPdf || '#'}">QR 리스트 PDF 다운로드</a>
+            ${currentGame.qrListPdf ? `<a class="secondary-btn" href="${currentGame.qrListPdf}">QR 리스트 PDF 다운로드</a>` : ''}
             <a class="ghost-btn" href="${gamePath('print')}">인쇄용 QR 페이지</a>
           </div>
           <div class="qr-grid">
