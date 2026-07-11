@@ -674,8 +674,8 @@
   </div>
   <a class="floating-scan is-hidden" id="floatingScan" href="#/scan" aria-label="QR 스캐너 열기">QR<br>스캔</a>
 
-  <script src="src/vendor/html5-qrcode.min.js"></script>
-  <script src="src/data/games.js"></script>
+  <script src="src/vendor/html5-qrcode.min.js?v=20260711"></script>
+  <script src="src/data/games.js?v=20260711-subjective2"></script>
   <script>
     const catalog = window.QUIZ_ESCAPE_CATALOG || { subjects: [] };
 
@@ -691,6 +691,21 @@
       return allGames().find(game => game.subjectId === subjectId && game.id === gameId) || defaultGame();
     }
 
+    function storageKeyForGame(game) {
+      return `quiz-escape-state-${game.storageKey || `${game.subjectId}-${game.id}`}`;
+    }
+
+    function findTokenTarget(value) {
+      const token = normalizeToken(value);
+      for (const game of allGames()) {
+        const mission = game.missions.find(item => normalizeToken(item.token) === token);
+        if (mission) {
+          return { game, mission };
+        }
+      }
+      return null;
+    }
+
     function gameFromHash() {
       const match = (location.hash || '').match(/^#\/(?:student|game|play|scan|result|teacher|record|final|print)\/([^/]+)\/([^/]+)/);
       return match ? findGame(match[1], match[2]) : defaultGame();
@@ -701,8 +716,8 @@
     const app = document.querySelector('#app');
     const mainNav = document.querySelector('#mainNav');
     const floatingScan = document.querySelector('#floatingScan');
-    let storageKey = `quiz-escape-state-${currentGame.storageKey || `${currentGame.subjectId}-${currentGame.id}`}`;
-    let finalAnswer = missions.reduce((total, mission) => total + mission.answer, 0);
+    let storageKey = storageKeyForGame(currentGame);
+    let finalAnswer = missions.reduce((total, mission) => total + finalMissionValue(mission), 0);
     function createEmptyState() {
       return { teamName: '', memberCount: '4', startedAt: '', activeMissionId: null, lastScannedToken: '', solved: {}, attempts: {} };
     }
@@ -714,8 +729,8 @@
     function syncActiveGame() {
       currentGame = gameFromHash();
       missions = currentGame.missions;
-      storageKey = `quiz-escape-state-${currentGame.storageKey || `${currentGame.subjectId}-${currentGame.id}`}`;
-      finalAnswer = missions.reduce((total, mission) => total + mission.answer, 0);
+      storageKey = storageKeyForGame(currentGame);
+      finalAnswer = missions.reduce((total, mission) => total + finalMissionValue(mission), 0);
       renderNav();
       renderFloatingScanButton();
     }
@@ -763,6 +778,22 @@
       return memoryState;
     }
 
+    function getStateForGame(game) {
+      if (game.id === currentGame.id && game.subjectId === currentGame.subjectId) {
+        return getState();
+      }
+
+      if (!storageAvailable) {
+        return memoryState;
+      }
+
+      try {
+        return sanitizeState(JSON.parse(localStorage.getItem(storageKeyForGame(game))));
+      } catch {
+        return createEmptyState();
+      }
+    }
+
     function saveState(state) {
       memoryState = sanitizeState(state);
       try {
@@ -771,6 +802,22 @@
       } catch {
         storageAvailable = false;
         // Some school tablet/browser settings block localStorage. The game still works for the current screen.
+      }
+    }
+
+    function saveStateForGame(game, state) {
+      const sanitized = sanitizeState(state);
+      if (game.id === currentGame.id && game.subjectId === currentGame.subjectId) {
+        saveState(sanitized);
+        return;
+      }
+
+      memoryState = sanitized;
+      try {
+        localStorage.setItem(storageKeyForGame(game), JSON.stringify(sanitized));
+        storageAvailable = true;
+      } catch {
+        storageAvailable = false;
       }
     }
 
@@ -797,27 +844,22 @@
       return String(value || '').trim().toUpperCase();
     }
 
-    function findMissionByToken(value) {
-      const token = normalizeToken(value);
-      return missions.find(mission => normalizeToken(mission.token) === token);
-    }
-
     function allMissionsSolved(state = getState()) {
       return missions.every(mission => state.solved[mission.id]);
     }
 
-    function previousMission(mission) {
-      const index = missions.findIndex(item => item.id === mission.id);
-      return index > 0 ? missions[index - 1] : null;
+    function previousMission(mission, missionList = missions) {
+      const index = missionList.findIndex(item => item.id === mission.id);
+      return index > 0 ? missionList[index - 1] : null;
     }
 
-    function canOpenMission(mission, state = getState()) {
-      const previous = previousMission(mission);
+    function canOpenMission(mission, state = getState(), missionList = missions) {
+      const previous = previousMission(mission, missionList);
       return !previous || Boolean(state.solved[previous.id]);
     }
 
-    function nextRequiredMission(state = getState()) {
-      return missions.find(mission => !state.solved[mission.id]) || null;
+    function nextRequiredMission(state = getState(), missionList = missions) {
+      return missionList.find(mission => !state.solved[mission.id]) || null;
     }
 
     function progressBlock(mission, state = getState()) {
@@ -829,6 +871,51 @@
           <div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div>
         </div>
       `;
+    }
+
+    function answerValues(mission) {
+      const values = [mission.answer, ...(Array.isArray(mission.acceptedAnswers) ? mission.acceptedAnswers : [])];
+      return values.map(value => String(value));
+    }
+
+    function normalizeAnswer(value) {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replaceAll(/[.!?。！？]/g, '')
+        .replaceAll(/\s+/g, ' ');
+    }
+
+    function isCorrectAnswer(mission, rawValue) {
+      const trimmedValue = rawValue.trim();
+      if (!trimmedValue) {
+        return false;
+      }
+      if (typeof mission.answer === 'number') {
+        const numericValue = Number(trimmedValue);
+        return Number.isFinite(numericValue) && numericValue === mission.answer;
+      }
+      const normalizedValue = normalizeAnswer(trimmedValue);
+      return answerValues(mission).some(answer => normalizeAnswer(answer) === normalizedValue);
+    }
+
+    function displayAnswer(mission) {
+      return String(mission.answer);
+    }
+
+    function finalMissionValue(mission) {
+      if (currentGame.subjectId === 'english') {
+        return mission.id;
+      }
+      return typeof mission.answer === 'number' ? mission.answer : mission.id;
+    }
+
+    function inputModeForMission(mission) {
+      return typeof mission.answer === 'number' ? 'numeric' : 'text';
+    }
+
+    function placeholderForMission(mission) {
+      return typeof mission.answer === 'number' ? '정답 숫자 입력' : '정답 직접 입력';
     }
 
     function gamePath(route) {
@@ -1047,13 +1134,15 @@
     }
 
     function handleScanResult(decodedText) {
-      const mission = findMissionByToken(decodedText);
-      const state = getState();
+      const target = findTokenTarget(decodedText);
+      const targetGame = target?.game || currentGame;
+      const mission = target?.mission || null;
+      const state = getStateForGame(targetGame);
       state.lastScannedToken = normalizeToken(decodedText);
       state.startedAt = state.startedAt || new Date().toISOString();
 
       if (!mission) {
-        saveState(state);
+        saveStateForGame(currentGame, state);
         const status = document.querySelector('#scannerStatus');
         if (status) {
           status.textContent = `알 수 없는 연구소 QR입니다: ${state.lastScannedToken}`;
@@ -1061,20 +1150,20 @@
         return;
       }
 
-      if (!canOpenMission(mission, state)) {
-        const required = nextRequiredMission(state);
-        saveState(state);
+      if (!canOpenMission(mission, state, targetGame.missions)) {
+        const required = nextRequiredMission(state, targetGame.missions);
+        saveStateForGame(targetGame, state);
         const status = document.querySelector('#scannerStatus');
         if (status) {
-          status.textContent = `아직 열 수 없는 QR입니다. 먼저 QR ${required?.id || 1} 문제를 해결한 뒤 순서대로 진행하세요.`;
+          status.textContent = `${targetGame.title}의 아직 열 수 없는 QR입니다. 먼저 QR ${required?.id || 1} 문제를 해결한 뒤 순서대로 진행하세요.`;
         }
         return;
       }
 
       state.activeMissionId = mission.id;
-      saveState(state);
+      saveStateForGame(targetGame, state);
       stopScanner();
-      location.hash = gamePath('play');
+      location.hash = `#/play/${targetGame.subjectId}/${targetGame.id}`;
     }
 
     function renderActiveMission() {
@@ -1129,7 +1218,7 @@
             <div class="question-box">${mission.question}</div>
             <form class="answer-form" id="answerForm">
               <label class="hidden" for="answerInput">정답 입력</label>
-              <input class="answer-input" id="answerInput" inputmode="numeric" autocomplete="off" placeholder="정답 숫자 입력" value="${solved ? mission.answer : ''}">
+              <input class="answer-input" id="answerInput" inputmode="${inputModeForMission(mission)}" autocomplete="off" placeholder="${placeholderForMission(mission)}" value="${solved ? escapeHtml(displayAnswer(mission)) : ''}">
               <button class="primary-btn" type="submit">확인</button>
             </form>
             <div class="feedback ${solved ? 'show correct' : ''}" id="feedback" role="status" aria-live="polite">
@@ -1169,12 +1258,12 @@
       const input = document.querySelector('#answerInput');
       const feedback = document.querySelector('#feedback');
       const attemptCount = document.querySelector('#attemptCount');
-      const value = Number(input.value.trim());
+      const value = input.value.trim();
       const state = getState();
 
-      if (value === mission.answer) {
+      if (isCorrectAnswer(mission, value)) {
         state.solved[mission.id] = {
-          answer: mission.answer,
+          answer: displayAnswer(mission),
           color: mission.color,
           nextClue: mission.nextClue,
           token: mission.token,
@@ -1233,7 +1322,7 @@
           <h1 style="font-size:clamp(42px,8vw,84px);">${currentGame.finalInstruction || '모든 답을 더해라'}</h1>
           <p class="subtitle">색칠 글자를 순서대로 모으면 마지막 암호 계산법이 나타납니다.</p>
           <div class="final-sum">
-            ${missions.map(mission => `<div class="sum-chip">QR ${mission.id}<br>${state.solved[mission.id] ? mission.answer : '?'}</div>`).join('')}
+            ${missions.map(mission => `<div class="sum-chip">QR ${mission.id}<br>${state.solved[mission.id] ? finalMissionValue(mission) : '?'}</div>`).join('')}
           </div>
           ${allSolved ? `
             <form class="answer-form" id="finalForm">
@@ -1259,7 +1348,10 @@
             finalFeedback.innerHTML = `<h2>탈출 성공!</h2><p>정답은 <strong>${finalAnswer}</strong>. ${currentGame.finalSuccessMessage || '친구들과 끝까지 도전한 힘이 오늘의 보물입니다.'}</p><div class="hero-actions"><a class="secondary-btn" href="${gamePath('record')}">탐험 기록 보기</a></div>`;
           } else {
             finalFeedback.className = 'feedback show wrong';
-            finalFeedback.innerHTML = `<h3>보물상자가 아직 열리지 않았어요.</h3><p>팀 기록지의 ${missions.length}개 정답을 모두 더했는지 검산해 보세요.</p>`;
+            const finalRetryText = currentGame.subjectId === 'english'
+              ? `QR 번호 1부터 ${missions.length}까지 모두 더했는지 검산해 보세요.`
+              : `팀 기록지의 ${missions.length}개 정답을 모두 더했는지 검산해 보세요.`;
+            finalFeedback.innerHTML = `<h3>보물상자가 아직 열리지 않았어요.</h3><p>${finalRetryText}</p>`;
           }
         });
       }
@@ -1270,7 +1362,7 @@
       const currentSolvedCount = solvedCount(state);
       const completed = allMissionsSolved(state);
       const colorCode = missions.map(mission => state.solved[mission.id]?.color || '?').join('');
-      const answerSum = missions.reduce((total, mission) => total + (state.solved[mission.id] ? mission.answer : 0), 0);
+      const answerSum = missions.reduce((total, mission) => total + (state.solved[mission.id] ? finalMissionValue(mission) : 0), 0);
 
       app.innerHTML = `
         <section class="panel">

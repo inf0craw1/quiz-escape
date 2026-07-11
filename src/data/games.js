@@ -12,6 +12,7 @@ function createMission(item, index, tokenPrefix, gradeLabel, theme) {
     hiddenPlace: CLASSROOM_PLACES[index],
     question: item.question,
     answer: item.answer,
+    ...(Array.isArray(item.acceptedAnswers) ? { acceptedAnswers: item.acceptedAnswers } : {}),
     color: COMPLETION_LETTERS[index],
     nextClue: index < CLASSROOM_PLACES.length - 1 ? CLASSROOM_PLACES[index + 1] : '모든 문제를 풀고 결과 화면으로 가세요',
     explanation: item.explanation,
@@ -32,7 +33,7 @@ function createGradeGame(subjectId, config) {
     studentPathLabel: '학생용 입장',
     teacherPathLabel: '교사용 준비',
     storageKey: `${subjectId}-${config.id}`,
-    finalInstruction: '모든 답을 더해라',
+    finalInstruction: config.finalInstruction || (config.subjectName === '영어' ? 'QR 번호 1~6을 모두 더해라' : '모든 답을 더해라'),
     finalSuccessMessage: `${config.gradeLabel} ${config.subjectName} 미션을 끝까지 해결했습니다. 오늘의 보물은 친구들과 함께 생각하고 설명한 힘입니다.`,
     teacherInstructions: '각 QR에는 주소가 아니라 미션 토큰만 들어갑니다. 학생은 이전 문제를 맞힌 뒤에만 다음 QR을 열 수 있습니다.',
     roles: [],
@@ -146,100 +147,100 @@ const englishGradeConfigs = [
   {
     id: 'elementary-1-english', gradeLabel: '초1', subjectName: '영어', title: '초1 영어 색깔 놀이터', subtitle: '그림과 소리로 영어 단서를 찾아라', tokenPrefix: 'ENG-E1', theme: '색깔 놀이터',
     missions: [
-      { title: 'Color Code', question: 'red의 뜻은 몇 번일까요? 1) 빨강 2) 파랑 3) 노랑', answer: 1, explanation: 'red는 빨강입니다.' },
-      { title: 'Number Code', question: 'five는 숫자로 몇일까요?', answer: 5, explanation: 'five는 5입니다.' },
-      { title: 'Classroom Code', question: 'book의 뜻은 몇 번일까요? 1) 책 2) 문 3) 창문', answer: 1, explanation: 'book은 책입니다.' },
-      { title: 'Animal Code', question: 'cat의 뜻은 몇 번일까요? 1) 강아지 2) 고양이 3) 새', answer: 2, explanation: 'cat은 고양이입니다.' },
-      { title: 'Hello Code', question: '인사말 hello는 몇 번일까요? 1) 안녕 2) 잘 가 3) 고마워', answer: 1, explanation: 'hello는 안녕이라는 인사입니다.' },
-      { title: 'Action Code', question: 'stand up은 몇 번 행동일까요? 1) 일어서기 2) 앉기 3) 뛰기', answer: 1, explanation: 'stand up은 일어서기입니다.' }
+      { title: 'Color Code', question: 'red의 뜻을 한글로 쓰세요.', answer: '빨강', acceptedAnswers: ['빨강', '빨간색'], explanation: 'red는 빨강입니다.' },
+      { title: 'Number Code', question: '숫자 5를 영어로 쓰세요.', answer: 'five', explanation: 'five는 5입니다.' },
+      { title: 'Classroom Code', question: 'book의 뜻을 한글로 쓰세요.', answer: '책', explanation: 'book은 책입니다.' },
+      { title: 'Animal Code', question: 'cat의 뜻을 한글로 쓰세요.', answer: '고양이', explanation: 'cat은 고양이입니다.' },
+      { title: 'Hello Code', question: 'hello의 뜻을 한글 인사말로 쓰세요.', answer: '안녕', acceptedAnswers: ['안녕', '안녕하세요'], explanation: 'hello는 안녕이라는 인사입니다.' },
+      { title: 'Action Code', question: 'stand up의 뜻을 한글로 쓰세요.', answer: '일어서기', acceptedAnswers: ['일어서기', '일어서다'], explanation: 'stand up은 일어서기입니다.' }
     ]
   },
   {
     id: 'elementary-2-english', gradeLabel: '초2', subjectName: '영어', title: '초2 영어 가족 상점', subtitle: '가족·몸·음식 단어를 모아라', tokenPrefix: 'ENG-E2', theme: '가족 상점',
     missions: [
-      { title: 'Body Code', question: 'eye의 뜻은 몇 번일까요? 1) 손 2) 눈 3) 발', answer: 2, explanation: 'eye는 눈입니다.' },
-      { title: 'Family Code', question: 'sister의 뜻은 몇 번일까요? 1) 자매 2) 아빠 3) 할머니', answer: 1, explanation: 'sister는 여자 형제, 즉 자매를 뜻합니다.' },
-      { title: 'Toy Code', question: 'ball의 뜻은 몇 번일까요? 1) 인형 2) 공 3) 자동차', answer: 2, explanation: 'ball은 공입니다.' },
-      { title: 'Food Code', question: 'milk의 뜻은 몇 번일까요? 1) 우유 2) 물 3) 주스', answer: 1, explanation: 'milk는 우유입니다.' },
-      { title: 'Weather Code', question: 'sunny의 뜻은 몇 번일까요? 1) 비 오는 2) 눈 오는 3) 맑은', answer: 3, explanation: 'sunny는 맑은 날씨입니다.' },
-      { title: 'Letter Code', question: 'A, B, C 다음에 오는 알파벳은 몇 번째 알파벳일까요?', answer: 4, explanation: 'A=1, B=2, C=3, D=4입니다.' }
+      { title: 'Body Code', question: 'eye의 뜻을 한글로 쓰세요.', answer: '눈', explanation: 'eye는 눈입니다.' },
+      { title: 'Family Code', question: 'sister의 뜻을 한글로 쓰세요.', answer: '자매', acceptedAnswers: ['자매', '여자 형제', '여자형제'], explanation: 'sister는 여자 형제, 즉 자매를 뜻합니다.' },
+      { title: 'Toy Code', question: 'ball의 뜻을 한글로 쓰세요.', answer: '공', explanation: 'ball은 공입니다.' },
+      { title: 'Food Code', question: 'milk의 뜻을 한글로 쓰세요.', answer: '우유', explanation: 'milk는 우유입니다.' },
+      { title: 'Weather Code', question: 'sunny의 뜻을 한글로 쓰세요.', answer: '맑은', acceptedAnswers: ['맑은', '맑음', '화창한'], explanation: 'sunny는 맑은 날씨입니다.' },
+      { title: 'Letter Code', question: 'A, B, C 다음에 오는 알파벳을 대문자로 쓰세요.', answer: 'D', acceptedAnswers: ['D', 'd'], explanation: 'A, B, C 다음에는 D가 옵니다.' }
     ]
   },
   {
     id: 'elementary-3-english', gradeLabel: '초3', subjectName: '영어', title: '초3 영어 파닉스 숲', subtitle: '소리와 짧은 문장 단서를 해결하라', tokenPrefix: 'ENG-E3', theme: '파닉스 숲',
     missions: [
-      { title: 'CVC Code', question: 'cat, cap, can은 모두 어떤 첫 글자 소리로 시작할까요? A=1, B=2, C=3으로 답하세요.', answer: 3, explanation: 'cat, cap, can은 모두 C 소리로 시작합니다.' },
-      { title: 'School Code', question: 'eraser의 뜻은 몇 번일까요? 1) 지우개 2) 책상 3) 가방', answer: 1, explanation: 'eraser는 지우개입니다.' },
-      { title: 'Animal Home', question: 'fish가 사는 곳인 ocean은 몇 번일까요? 1) 바다 2) 숲 3) 농장', answer: 1, explanation: 'ocean은 바다입니다.' },
-      { title: 'Question Code', question: 'What is this?에 알맞은 대답은 몇 번일까요? 1) It is a pencil. 2) I am ten years old. 3) It is sunny.', answer: 1, explanation: 'What is this?는 이것이 무엇인지 묻는 말이므로 It is a pencil.이 알맞습니다.' },
-      { title: 'Like Code', question: 'I like apples.의 뜻은 몇 번일까요? 1) 나는 사과를 좋아한다 2) 나는 사과가 없다 3) 사과는 크다', answer: 1, explanation: 'I like는 좋아한다는 뜻입니다.' },
-      { title: 'Verb Code', question: 'run의 뜻은 몇 번일까요? 1) 먹다 2) 달리다 3) 읽다', answer: 2, explanation: 'run은 달리다입니다.' }
+      { title: 'CVC Code', question: 'cat, cap, can은 모두 어떤 첫 글자로 시작할까요? 알파벳으로 쓰세요.', answer: 'C', acceptedAnswers: ['C', 'c'], explanation: 'cat, cap, can은 모두 C 소리로 시작합니다.' },
+      { title: 'School Code', question: 'eraser의 뜻을 한글로 쓰세요.', answer: '지우개', explanation: 'eraser는 지우개입니다.' },
+      { title: 'Animal Home', question: 'fish가 사는 곳인 ocean의 뜻을 한글로 쓰세요.', answer: '바다', explanation: 'ocean은 바다입니다.' },
+      { title: 'Question Code', question: 'What is this?에 알맞은 영어 대답을 쓰세요. 답: It is a ______.', answer: 'pencil', acceptedAnswers: ['pencil', 'a pencil', 'it is a pencil'], explanation: 'What is this?는 이것이 무엇인지 묻는 말이므로 It is a pencil.이 알맞습니다.' },
+      { title: 'Like Code', question: 'I like apples.의 뜻에서 빈칸에 들어갈 말을 쓰세요. 나는 사과를 ______.', answer: '좋아한다', acceptedAnswers: ['좋아한다', '좋아해'], explanation: 'I like는 좋아한다는 뜻입니다.' },
+      { title: 'Verb Code', question: 'run의 뜻을 한글로 쓰세요.', answer: '달리다', acceptedAnswers: ['달리다', '달리기'], explanation: 'run은 달리다입니다.' }
     ]
   },
   {
     id: 'elementary-4-english', gradeLabel: '초4', subjectName: '영어', title: '초4 영어 하루 지도', subtitle: '집·시간·일상 표현을 따라가라', tokenPrefix: 'ENG-E4', theme: '하루 지도',
     missions: [
-      { title: 'House Code', question: 'kitchen의 뜻은 몇 번일까요? 1) 부엌 2) 침실 3) 욕실', answer: 1, explanation: 'kitchen은 부엌입니다.' },
-      { title: 'Time Code', question: '3:00은 영어로 three o’clock입니다. 숫자로 몇 시일까요?', answer: 3, explanation: 'three o’clock은 3시입니다.' },
-      { title: 'Menu Code', question: 'I want juice.에서 원하는 것은 몇 번일까요? 1) milk 2) juice 3) water', answer: 2, explanation: 'I want juice는 주스를 원한다는 뜻입니다.' },
-      { title: 'Routine Code', question: 'get up의 뜻은 몇 번일까요? 1) 일어나다 2) 씻다 3) 자다', answer: 1, explanation: 'get up은 일어나다입니다.' },
-      { title: 'Clothes Code', question: 'jacket의 뜻은 몇 번일까요? 1) 모자 2) 재킷 3) 신발', answer: 2, explanation: 'jacket은 재킷입니다.' },
-      { title: 'Hobby Code', question: 'He likes soccer.에서 주어는 몇 번일까요? 1) He 2) likes 3) soccer', answer: 1, explanation: '문장의 주어는 He입니다.' }
+      { title: 'House Code', question: 'kitchen의 뜻을 한글로 쓰세요.', answer: '부엌', acceptedAnswers: ['부엌', '주방'], explanation: 'kitchen은 부엌입니다.' },
+      { title: 'Time Code', question: '3:00을 영어로 쓰세요.', answer: 'three o’clock', acceptedAnswers: ['three o’clock', 'three oclock', "three o'clock"], explanation: 'three o’clock은 3시입니다.' },
+      { title: 'Menu Code', question: 'I want juice.에서 원하는 음료를 영어로 쓰세요.', answer: 'juice', explanation: 'I want juice는 주스를 원한다는 뜻입니다.' },
+      { title: 'Routine Code', question: 'get up의 뜻을 한글로 쓰세요.', answer: '일어나다', acceptedAnswers: ['일어나다', '일어서다'], explanation: 'get up은 일어나다입니다.' },
+      { title: 'Clothes Code', question: 'jacket의 뜻을 한글로 쓰세요.', answer: '재킷', acceptedAnswers: ['재킷', '자켓'], explanation: 'jacket은 재킷입니다.' },
+      { title: 'Hobby Code', question: 'He likes soccer.에서 주어를 영어로 쓰세요.', answer: 'He', acceptedAnswers: ['He', 'he'], explanation: '문장의 주어는 He입니다.' }
     ]
   },
   {
     id: 'elementary-5-english', gradeLabel: '초5', subjectName: '영어', title: '초5 영어 길찾기 탐험', subtitle: '장소·과거·비교 표현을 찾아라', tokenPrefix: 'ENG-E5', theme: '길찾기 탐험',
     missions: [
-      { title: 'Place Code', question: 'library의 뜻은 몇 번일까요? 1) 도서관 2) 병원 3) 공원', answer: 1, explanation: 'library는 도서관입니다.' },
-      { title: 'Direction Code', question: 'turn left의 뜻은 몇 번일까요? 1) 오른쪽으로 돌아라 2) 왼쪽으로 돌아라 3) 멈춰라', answer: 2, explanation: 'left는 왼쪽입니다.' },
-      { title: 'Past Code', question: 'I visited Busan yesterday.에서 과거를 나타내는 말은 몇 번일까요? 1) visited 2) Busan 3) I', answer: 1, explanation: 'visited는 visit의 과거형입니다.' },
-      { title: 'Compare Code', question: 'bigger의 뜻은 몇 번일까요? 1) 더 큰 2) 가장 큰 3) 작은', answer: 1, explanation: 'bigger는 비교급으로 더 크다는 뜻입니다.' },
-      { title: 'Job Code', question: 'doctor의 뜻은 몇 번일까요? 1) 선생님 2) 의사 3) 가수', answer: 2, explanation: 'doctor는 의사입니다.' },
-      { title: 'Invitation Code', question: 'Let’s play soccer.는 무엇을 하는 표현일까요? 1) 초대/제안 2) 사과 3) 감사', answer: 1, explanation: 'Let’s는 함께 하자고 제안하는 표현입니다.' }
+      { title: 'Place Code', question: 'library의 뜻을 한글로 쓰세요.', answer: '도서관', explanation: 'library는 도서관입니다.' },
+      { title: 'Direction Code', question: 'turn left의 뜻을 한글로 쓰세요.', answer: '왼쪽으로 돌아라', acceptedAnswers: ['왼쪽으로 돌아라', '왼쪽으로 돌기', '왼쪽으로 돌아'], explanation: 'left는 왼쪽입니다.' },
+      { title: 'Past Code', question: 'I visited Busan yesterday.에서 과거를 나타내는 단어를 영어로 쓰세요.', answer: 'visited', explanation: 'visited는 visit의 과거형입니다.' },
+      { title: 'Compare Code', question: 'bigger의 뜻을 한글로 쓰세요.', answer: '더 큰', acceptedAnswers: ['더 큰', '더크다', '더 크다'], explanation: 'bigger는 비교급으로 더 크다는 뜻입니다.' },
+      { title: 'Job Code', question: 'doctor의 뜻을 한글로 쓰세요.', answer: '의사', explanation: 'doctor는 의사입니다.' },
+      { title: 'Invitation Code', question: 'Let’s play soccer.는 무엇을 하는 표현일까요? 한글로 쓰세요.', answer: '제안', acceptedAnswers: ['제안', '초대', '초대/제안'], explanation: 'Let’s는 함께 하자고 제안하는 표현입니다.' }
     ]
   },
   {
     id: 'elementary-6-english', gradeLabel: '초6', subjectName: '영어', title: '초6 영어 세계 여행', subtitle: '여행·건강·미래 계획을 해독하라', tokenPrefix: 'ENG-E6', theme: '세계 여행',
     missions: [
-      { title: 'Travel Code', question: 'airport의 뜻은 몇 번일까요? 1) 공항 2) 호텔 3) 박물관', answer: 1, explanation: 'airport는 공항입니다.' },
-      { title: 'Health Code', question: 'headache의 뜻은 몇 번일까요? 1) 두통 2) 감기 3) 배탈', answer: 1, explanation: 'headache는 두통입니다.' },
-      { title: 'Future Code', question: 'I will study tomorrow.에서 미래를 나타내는 말은 몇 번일까요? 1) will 2) study 3) tomorrow', answer: 1, explanation: 'will은 미래를 나타낼 때 씁니다.' },
-      { title: 'Reason Code', question: 'because의 뜻은 몇 번일까요? 1) 그러나 2) 왜냐하면 3) 그리고', answer: 2, explanation: 'because는 이유를 말할 때 씁니다.' },
-      { title: 'Culture Code', question: 'festival의 뜻은 몇 번일까요? 1) 축제 2) 숙제 3) 운동장', answer: 1, explanation: 'festival은 축제입니다.' },
-      { title: 'Message Code', question: 'Dear Mina로 시작하는 글은 보통 몇 번 형식일까요? 1) 편지/이메일 2) 메뉴판 3) 지도', answer: 1, explanation: 'Dear는 편지나 이메일에서 자주 쓰는 시작 표현입니다.' }
+      { title: 'Travel Code', question: 'airport의 뜻을 한글로 쓰세요.', answer: '공항', explanation: 'airport는 공항입니다.' },
+      { title: 'Health Code', question: 'headache의 뜻을 한글로 쓰세요.', answer: '두통', explanation: 'headache는 두통입니다.' },
+      { title: 'Future Code', question: 'I will study tomorrow.에서 미래를 나타내는 단어를 영어로 쓰세요.', answer: 'will', explanation: 'will은 미래를 나타낼 때 씁니다.' },
+      { title: 'Reason Code', question: 'because의 뜻을 한글로 쓰세요.', answer: '왜냐하면', explanation: 'because는 이유를 말할 때 씁니다.' },
+      { title: 'Culture Code', question: 'festival의 뜻을 한글로 쓰세요.', answer: '축제', explanation: 'festival은 축제입니다.' },
+      { title: 'Message Code', question: 'Dear Mina로 시작하는 글은 보통 어떤 형식일까요? 한글로 쓰세요.', answer: '편지', acceptedAnswers: ['편지', '이메일', '편지/이메일'], explanation: 'Dear는 편지나 이메일에서 자주 쓰는 시작 표현입니다.' }
     ]
   },
   {
     id: 'middle-1-english', gradeLabel: '중1', subjectName: '영어', title: '중1 영어 문장 연구실', subtitle: 'be동사·일반동사·의문사를 분석하라', tokenPrefix: 'ENG-M1', theme: '문장 연구실',
     missions: [
-      { title: 'Be Verb Code', question: 'She is kind.에서 be동사는 몇 번째 단어일까요?', answer: 2, explanation: 'She(1) is(2) kind(3)이므로 be동사는 두 번째 단어입니다.' },
-      { title: 'Do Verb Code', question: 'They play soccer.에서 일반동사는 몇 번째 단어일까요?', answer: 2, explanation: 'play가 일반동사입니다.' },
-      { title: 'Can Code', question: 'I can swim.에서 능력을 나타내는 조동사는 몇 번째 단어일까요?', answer: 2, explanation: 'can은 할 수 있다는 능력을 나타냅니다.' },
-      { title: 'Command Code', question: 'Open the door.는 문장 종류 중 몇 번일까요? 1) 명령문 2) 의문문 3) 감탄문', answer: 1, explanation: '동사원형으로 시작해 지시하므로 명령문입니다.' },
-      { title: 'Wh Code', question: 'Where do you live?에서 장소를 묻는 의문사는 몇 번째 단어일까요?', answer: 1, explanation: 'Where가 장소를 묻는 의문사입니다.' },
-      { title: 'Reading Code', question: 'Tom has two dogs and three cats. Tom의 동물은 모두 몇 마리일까요?', answer: 5, explanation: 'two dogs 2마리와 three cats 3마리로 모두 5마리입니다.' }
+      { title: 'Be Verb Code', question: 'She is kind.에서 be동사를 영어로 쓰세요.', answer: 'is', explanation: 'She is kind.에서 be동사는 is입니다.' },
+      { title: 'Do Verb Code', question: 'They play soccer.에서 일반동사를 영어로 쓰세요.', answer: 'play', explanation: 'play가 일반동사입니다.' },
+      { title: 'Can Code', question: 'I can swim.에서 능력을 나타내는 조동사를 영어로 쓰세요.', answer: 'can', explanation: 'can은 할 수 있다는 능력을 나타냅니다.' },
+      { title: 'Command Code', question: 'Open the door.는 어떤 문장 종류일까요? 한글로 쓰세요.', answer: '명령문', explanation: '동사원형으로 시작해 지시하므로 명령문입니다.' },
+      { title: 'Wh Code', question: 'Where do you live?에서 장소를 묻는 의문사를 영어로 쓰세요.', answer: 'Where', acceptedAnswers: ['Where', 'where'], explanation: 'Where가 장소를 묻는 의문사입니다.' },
+      { title: 'Reading Code', question: 'Tom has two dogs and three cats. Tom의 동물 수를 영어 단어로 쓰세요.', answer: 'five', acceptedAnswers: ['five', 'Five'], explanation: 'two dogs 2마리와 three cats 3마리로 모두 five입니다.' }
     ]
   },
   {
     id: 'middle-2-english', gradeLabel: '중2', subjectName: '영어', title: '중2 영어 시제 타워', subtitle: '과거·미래·비교와 접속사를 통과하라', tokenPrefix: 'ENG-M2', theme: '시제 타워',
     missions: [
-      { title: 'Past Code', question: 'go의 과거형 went는 몇 번일까요? 1) goed 2) went 3) goes', answer: 2, explanation: 'go의 과거형은 went입니다.' },
-      { title: 'Future Code', question: 'be going to에서 미래 의미를 만드는 핵심 표현은 몇 단어로 이루어져 있을까요?', answer: 3, explanation: 'be, going, to 세 단어입니다.' },
-      { title: 'Comparative Code', question: 'taller는 몇 번 의미일까요? 1) 더 키가 큰 2) 가장 키가 큰 3) 키가 작은', answer: 1, explanation: 'taller는 비교급입니다.' },
-      { title: 'Infinitive Code', question: 'I want to read.에서 to부정사는 몇 번째 단어부터 시작할까요?', answer: 3, explanation: 'I(1) want(2) to(3) read(4)입니다.' },
-      { title: 'Conjunction Code', question: 'I was tired, but I studied.에서 반대 의미를 연결하는 단어는 몇 번째 단어일까요?', answer: 5, explanation: 'but이 반대 의미를 연결합니다.' },
-      { title: 'Opinion Code', question: 'I think math is fun.에서 의견을 나타내는 동사는 몇 번째 단어일까요?', answer: 2, explanation: 'think는 생각이나 의견을 나타냅니다.' }
+      { title: 'Past Code', question: 'go의 과거형을 영어로 쓰세요.', answer: 'went', explanation: 'go의 과거형은 went입니다.' },
+      { title: 'Future Code', question: '미래 의미를 만드는 표현 be going to를 그대로 쓰세요.', answer: 'be going to', explanation: 'be going to는 미래 계획을 나타내는 세 단어 표현입니다.' },
+      { title: 'Comparative Code', question: 'taller의 뜻을 한글로 쓰세요.', answer: '더 키가 큰', acceptedAnswers: ['더 키가 큰', '더 큰'], explanation: 'taller는 비교급입니다.' },
+      { title: 'Infinitive Code', question: 'I want to read.에서 to부정사를 영어로 쓰세요.', answer: 'to read', explanation: 'to read가 to부정사입니다.' },
+      { title: 'Conjunction Code', question: 'I was tired, but I studied.에서 반대 의미를 연결하는 단어를 영어로 쓰세요.', answer: 'but', explanation: 'but이 반대 의미를 연결합니다.' },
+      { title: 'Opinion Code', question: 'I think math is fun.에서 의견을 나타내는 동사를 영어로 쓰세요.', answer: 'think', explanation: 'think는 생각이나 의견을 나타냅니다.' }
     ]
   },
   {
     id: 'middle-3-english', gradeLabel: '중3', subjectName: '영어', title: '중3 영어 독해 암호국', subtitle: '현재완료·수동태·관계대명사 단서를 해독하라', tokenPrefix: 'ENG-M3', theme: '독해 암호국',
     missions: [
-      { title: 'Perfect Code', question: 'I have visited Jeju.에서 현재완료를 만드는 조동사는 몇 번째 단어일까요?', answer: 2, explanation: 'have가 현재완료를 만듭니다.' },
-      { title: 'Passive Code', question: 'The window was broken.에서 수동태를 나타내는 be동사는 몇 번째 단어일까요?', answer: 3, explanation: 'was가 수동태의 be동사입니다.' },
-      { title: 'Relative Code', question: 'This is the book that I bought.에서 관계대명사는 몇 번째 단어일까요?', answer: 5, explanation: 'that이 관계대명사입니다.' },
-      { title: 'Participle Code', question: 'Look at the sleeping baby.에서 baby를 꾸미는 현재분사는 몇 번째 단어일까요?', answer: 4, explanation: 'sleeping이 baby를 꾸밉니다.' },
-      { title: 'If Code', question: 'If it rains, I will stay home.에서 조건을 나타내는 단어는 몇 번째 단어일까요?', answer: 1, explanation: 'If가 조건을 나타냅니다.' },
-      { title: 'Inference Code', question: 'Mina missed the bus, so she was late. Mina가 늦은 이유는 몇 번일까요? 1) 버스를 놓침 2) 숙제를 안 함 3) 비가 옴', answer: 1, explanation: 'missed the bus가 늦은 이유입니다.' }
+      { title: 'Perfect Code', question: 'I have visited Jeju.에서 현재완료를 만드는 조동사를 영어로 쓰세요.', answer: 'have', explanation: 'have가 현재완료를 만듭니다.' },
+      { title: 'Passive Code', question: 'The window was broken.에서 수동태를 나타내는 be동사를 영어로 쓰세요.', answer: 'was', explanation: 'was가 수동태의 be동사입니다.' },
+      { title: 'Relative Code', question: 'This is the book that I bought.에서 관계대명사를 영어로 쓰세요.', answer: 'that', explanation: 'that이 관계대명사입니다.' },
+      { title: 'Participle Code', question: 'Look at the sleeping baby.에서 baby를 꾸미는 현재분사를 영어로 쓰세요.', answer: 'sleeping', explanation: 'sleeping이 baby를 꾸밉니다.' },
+      { title: 'If Code', question: 'If it rains, I will stay home.에서 조건을 나타내는 단어를 영어로 쓰세요.', answer: 'If', acceptedAnswers: ['If', 'if'], explanation: 'If가 조건을 나타냅니다.' },
+      { title: 'Inference Code', question: 'Mina missed the bus, so she was late. Mina가 늦은 이유를 한글로 쓰세요.', answer: '버스를 놓침', acceptedAnswers: ['버스를 놓침', '버스를 놓쳤다', '버스 놓침'], explanation: 'missed the bus가 늦은 이유입니다.' }
     ]
   }
 ];
